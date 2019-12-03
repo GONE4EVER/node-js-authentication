@@ -2,7 +2,7 @@ POST http://localhost:3000/api/user/register
 content-type: application/json
 
 {
-    "name": "sample",
-    "email": "nikita.romanchuk@yandex.ru",
+    "name": "sample_name1",
+    "email": "nikita.romanchuk1@yandex.ru",
     "password": "password12321321"
 }

@@ -1,5 +1,5 @@
-// Validation
 const Joi = require('@hapi/joi');
+const User = require('@/models/user');
 
 const schema = Joi.object({
   name: Joi.string()
@@ -14,7 +14,7 @@ const schema = Joi.object({
     .required(),
 });
 
-const validationMiddleware = (req, res, next) => {
+const requestValidation = (req, res, next) => {
   if (!req.body) {
     return res.sendStatus(400);
   }
@@ -33,6 +33,23 @@ const validationMiddleware = (req, res, next) => {
   return next();
 };
 
+const checkIfExists = async (req, res, next) => {
+  const { data: userData } = req;
+
+  const emailExists = await User
+    .findOne({ email: userData.email });
+
+  if (emailExists) {
+    return res
+      .status(400)
+      .send('Already Exists');
+  }
+
+  return next();
+};
+
+
 module.exports = {
-  validationMiddleware,
+  requestValidation,
+  checkIfExists,
 };
