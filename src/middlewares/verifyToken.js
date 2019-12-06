@@ -1,40 +1,41 @@
 const jwt = require('jsonwebtoken');
 
-
 // Constants
-const { AUTH_HEADER } = require('@/constants/headers');
-const {
-  ACCESS_DENIED,
-  INVALID_TOKEN,
-} = require('@/constants/errors');
+const { INVALID_TOKEN } = require('@/constants/errors');
 
-const { JWT_SECRET } = process.env;
 
+const { TOKEN_SECRET } = process.env;
+const JWT_EXPIRED_ERROR = 'jwt expired';
+
+/*
+TODO: replace status 403 with redirect to login
+*/
 const verifyToken = (req, res, next) => {
-  const token = req.header(AUTH_HEADER);
+  const {
+    authorization: token,
+  } = req.signedCookies;
 
   try {
     if (!token) {
+      res.status(401);
       throw new Error(INVALID_TOKEN);
     }
 
-    const tokenVerified = jwt.verify(token, JWT_SECRET, (err) => {
+    const tokenVerified = jwt.verify(token, TOKEN_SECRET, (err) => {
       if (err) {
+        res.status(403);
         throw new Error(err.message);
       }
       return true;
     });
 
-    if (!tokenVerified) {
-      throw new Error(ACCESS_DENIED);
-    }
-
     req.body.isVerified = tokenVerified;
     return next();
   } catch ({ message }) {
-    return res
-      .status(403)
-      .send(message);
+    if (message === JWT_EXPIRED_ERROR) {
+      return res.redirect('/token');
+    }
+    return res.redirect('/login');
   }
 };
 

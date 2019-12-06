@@ -10,7 +10,15 @@ const doesUserExist = async (req, res, next) => {
 
   try {
     const userData = await User
-      .findOne({ email: user.email });
+      .findOne({ email: user.email })
+      .lean()
+      .populate('tokens');
+
+    if (!userData) {
+      req.body.existingUser = null;
+
+      return next();
+    }
 
     req.body.existingUser = userData;
 

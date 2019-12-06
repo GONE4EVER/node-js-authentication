@@ -5,7 +5,7 @@ const INVALID_REQUEST_BODY = 'Invalid request body defined';
 const USER_EXISTS = 'User Already Exists';
 
 // LOGIN
-const USER_NOT_FOUND = 'Email not found';
+const USER_NOT_FOUND = 'User not found';
 const WRONG_PASSWORD = 'Wrong password';
 
 // AUTHENTICATION

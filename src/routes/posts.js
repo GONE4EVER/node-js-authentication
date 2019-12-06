@@ -8,7 +8,7 @@ router.get(
   '/',
   verifyToken,
   (req, res) => {
-    res.send('posts');
+    res.send({ content: 'posts' });
   }
 );
 
