@@ -7,13 +7,10 @@ const { INVALID_TOKEN } = require('@/constants/errors');
 const { TOKEN_SECRET } = process.env;
 const JWT_EXPIRED_ERROR = 'jwt expired';
 
-/*
-TODO: replace status 403 with redirect to login
-*/
 const verifyToken = (req, res, next) => {
   const {
     authorization: token,
-  } = req.signedCookies;
+  } = req.cookies;
 
   try {
     if (!token) {
@@ -30,12 +27,16 @@ const verifyToken = (req, res, next) => {
     });
 
     req.body.isVerified = tokenVerified;
+
     return next();
   } catch ({ message }) {
     if (message === JWT_EXPIRED_ERROR) {
       return res.redirect('/token');
     }
-    return res.redirect('/login');
+
+    return res
+      .status(403)
+      .send({ message });
   }
 };
 

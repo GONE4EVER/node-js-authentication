@@ -5,24 +5,20 @@ const User = require('@/models/user');
 
 // Constants
 const {
-  USER_EXISTS,
+  USER_ALREADY_EXISTS,
 } = require('@/constants/errors');
 
 
 const HASH_SALT = 10;
 
 const registerHandler = async (req, res, next) => {
-  const {
-    error,
-    existingUser,
-    user,
-  } = req.body;
+  const { user } = req.body;
+  const { existingUser } = req.locals;
+
 
   try {
-    if (error) {
-      throw new Error(JSON.stringify(error));
-    } else if (existingUser) {
-      throw new Error(USER_EXISTS);
+    if (existingUser) {
+      throw new Error(USER_ALREADY_EXISTS);
     }
 
     const salt = await bcrypt.genSalt(HASH_SALT);

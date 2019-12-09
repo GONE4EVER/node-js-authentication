@@ -2,30 +2,19 @@ const User = require('@/models/user');
 
 
 const doesUserExist = async (req, res, next) => {
-  const { error, user } = req.body;
-
-  if (error) {
-    return next();
-  }
+  const { user } = req.body;
 
   try {
     const userData = await User
-      .findOne({ email: user.email })
-      .lean()
-      .populate('tokens');
+      .findOne({ email: user.email });
 
-    if (!userData) {
-      req.body.existingUser = null;
-
-      return next();
-    }
-
-    req.body.existingUser = userData;
+    req.locals = {
+      existingUser: userData || null,
+    };
 
     return next();
-  } catch (err) {
-    req.body.error = err;
-    return next();
+  } catch ({ message }) {
+    return next(message);
   }
 };
 

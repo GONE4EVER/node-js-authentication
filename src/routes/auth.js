@@ -8,8 +8,8 @@ const doesUserExist = require('@/middlewares/doesUserExist');
 const requestValidation = require('@/middlewares/requestValidation');
 
 // Route middlewares
-const registerHandler = require('./register');
-const loginHandler = require('./login');
+const registerHandler = require('@/controllers/register');
+const loginHandler = require('@/controllers/login');
 
 
 router.post(

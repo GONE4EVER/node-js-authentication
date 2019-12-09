@@ -1,5 +1,4 @@
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 
 // Models
 const User = require('@/models/user');
@@ -17,19 +16,14 @@ const {
 
 // TOKENS
 const generateTokens = require('@/utils/generateTokens');
+const { authCookeisConfig } = require('@/constants/jwt');
 
 
 const loginHandler = async (req, res, next) => {
-  const {
-    error,
-    existingUser,
-    user,
-  } = req.body;
+  const { user } = req.body;
+  const { existingUser } = req.locals;
 
   try {
-    if (error) {
-      throw new Error(error);
-    }
     if (!existingUser) {
       throw new Error(USER_NOT_FOUND);
     }
@@ -55,35 +49,24 @@ const loginHandler = async (req, res, next) => {
     ] = generateTokens({ _id: userID, name });
 
 
-    let tokenID;
-
     if (!token) {
-      const { _id } = await new Token({
+      const { _id: tokenID } = await new Token({
         access: accessToken,
         refresh: refreshToken,
       }).save();
 
-      tokenID = _id;
+      await User.findByIdAndUpdate(userID, { token: tokenID });
     } else {
-      const { _id } = await Token.findByIdAndUpdate(
+      await Token.findByIdAndUpdate(
         token,
         { access: accessToken, refresh: refreshToken }
       );
-
-      tokenID = _id;
     }
-    await User.findByIdAndUpdate(userID, { token: tokenID });
-
-    const cookieConfig = {
-      maxAge: 1000 * 60 * 60,
-      httpOnly: true,
-      signed: true,
-    };
 
     return res
       .status(200)
-      .cookie(TOKEN_COOKIE, accessToken, cookieConfig)
-      .cookie(REFRESH_TOKEN_COOKIE, refreshToken, cookieConfig)
+      .cookie(TOKEN_COOKIE, accessToken, authCookeisConfig)
+      .cookie(REFRESH_TOKEN_COOKIE, refreshToken, authCookeisConfig)
       .send({ _id: userID });
   } catch ({ message }) {
     return next(message);

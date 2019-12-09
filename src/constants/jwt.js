@@ -1,7 +1,15 @@
-const config = {
-  tokenLife: '1m',
+const jwtConfig = {
+  tokenLife: '10s',
   refreshTokenLife: '7d',
 };
 
+const authCookeisConfig = {
+  maxAge: 1000 * 60 * 60,
+  httpOnly: true,
+  // signed: true,
+};
 
-module.exports = config;
+module.exports = {
+  jwtConfig,
+  authCookeisConfig,
+};
