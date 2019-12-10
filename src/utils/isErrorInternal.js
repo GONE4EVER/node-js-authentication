@@ -1,6 +1,7 @@
-const errors = require('@/constants/errors');
-
-const nonProgramErrors = Object.values(errors);
+const {
+  names: { SERVER_INTERNAL_ERROR },
+  types: { JSON_PARSE_ERROR_TYPE },
+} = require('@/constants/errors');
 
 
 /**
@@ -13,13 +14,8 @@ const nonProgramErrors = Object.values(errors);
 * @param error - Error object with two required fields
 * @name and @message
 */
-const isErrorInternal = (error) => {
-  if (!error.name || nonProgramErrors.includes(error.name)) {
-    return false;
-  }
-
-  return true;
-};
+const isErrorInternal = ({ name, type }) => name === SERVER_INTERNAL_ERROR
+  || type === JSON_PARSE_ERROR_TYPE;
 
 
 module.exports = isErrorInternal;

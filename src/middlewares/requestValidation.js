@@ -2,29 +2,33 @@
 // Validation Schemas
 const { schemas } = require('@/validation/schemas');
 
-// Error constants
-const { INVALID_REQUEST_BODY } = require('@/constants/errors');
+// Error handling
+const generateError = require('@/utils/generateError');
+const { messages: { INVALID_REQUEST_BODY } } = require('@/constants/errors');
 
 
 const requestValidation = (schemaType) => (req, res, next) => {
   try {
     if (!req.body || !req.body.user) {
-      throw new Error(INVALID_REQUEST_BODY);
+      const error = generateError(INVALID_REQUEST_BODY);
+      throw error;
     } else {
       const { user } = req.body;
 
-      const { error } = schemas[schemaType]
+      const { error: validationError } = schemas[schemaType]
         .validate(user);
 
-      if (error) {
-        const [ details ] = error.details;
-        throw new Error(details.message);
+      if (validationError) {
+        const [ detail ] = validationError.details;
+
+        const error = generateError(detail.message);
+        throw error;
       }
     }
 
     return next();
-  } catch ({ message }) {
-    return next(message);
+  } catch (error) {
+    return next(error);
   }
 };
 

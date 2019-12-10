@@ -7,8 +7,11 @@ const User = require('@/models/user');
 // TOKENS
 const generateTokens = require('@/utils/generateTokens');
 
+// Error handling
+const generateError = require('@/utils/generateError');
+
 // Constants
-const { INVALID_TOKEN } = require('@/constants/errors');
+const { messages: { INVALID_TOKEN } } = require('@/constants/errors');
 
 const { REFRESH_TOKEN_SECRET } = process.env;
 
@@ -16,30 +19,41 @@ const { REFRESH_TOKEN_SECRET } = process.env;
 router.get('/', async (req, res, next) => {
   try {
     if (!req.cookies) {
-      throw new Error(INVALID_TOKEN);
+      const error = generateError(INVALID_TOKEN);
+      throw error;
     }
 
     const {
       refresh_token: tokenFromCookies,
     } = req.cookies;
 
-    const refreshTokenVerified = jwt.verify(
-      tokenFromCookies,
-      REFRESH_TOKEN_SECRET
-    );
+    const refreshTokenVerified = jwt.verify(tokenFromCookies, REFRESH_TOKEN_SECRET,
+      (err) => {
+        if (err) {
+          const error = generateError(err.message);
+          throw error;
+        }
+
+        return true;
+      });
 
     if (!refreshTokenVerified) {
-      throw new Error(INVALID_TOKEN);
+      const error = generateError(INVALID_TOKEN);
+      throw error;
     }
 
-    const { _id: userID, name } = refreshTokenVerified;
-    const userData = await User
+    const {
+      _id: userID,
+      name,
+    } = refreshTokenVerified;
+    const { token } = await User
       .findOne({ _id: userID })
       .select('_id name token')
       .populate('token', '-_id -__v');
 
-    if (tokenFromCookies !== userData.token.refresh) {
-      throw new Error(INVALID_TOKEN);
+    if (tokenFromCookies !== token.refresh) {
+      const error = generateError(INVALID_TOKEN);
+      throw error;
     }
 
     const [
@@ -51,9 +65,9 @@ router.get('/', async (req, res, next) => {
       accessToken,
       refreshToken,
     });
-  } catch ({ message }) {
-    res.status(403);
-    return next(message);
+  } catch (error) {
+    res.status(401);
+    return next(error);
   }
 });
 

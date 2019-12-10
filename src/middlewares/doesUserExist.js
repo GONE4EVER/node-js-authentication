@@ -1,3 +1,6 @@
+const statusCodes = require('http-status');
+
+// Models
 const User = require('@/models/user');
 
 
@@ -13,8 +16,9 @@ const doesUserExist = async (req, res, next) => {
     };
 
     return next();
-  } catch ({ message }) {
-    return next(message);
+  } catch (error) {
+    res.status(statusCodes.BAD_REQUEST);
+    return next(error);
   }
 };
 

@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
+const statusCodes = require('http-status');
 
 // Import Routes
 const authRoute = require('./routes/auth');
@@ -53,23 +54,30 @@ app.use('/token', tokenRoute);
 // eslint-disable-next-line
 app.use((error, req, res, next) => {
   const isInternal = isErrorInternal(error);
-  const errorStatus = isInternal ? 500 : 400;
+  const errorStatus = isInternal
+    ? statusCodes.BAD_REQUEST
+    : statusCodes.INTERNAL_SERVER_ERROR;
 
   /*
   * Checking wheather status code was already set
   * (code 200 is default)
   */
-  if (res.statusCode !== 200) {
+  if (res.statusCode === statusCodes.OK) {
     res.status(errorStatus);
   }
 
-  if (isInternal) {
-    console.log('---------------------------!!!!---------------------------'.bgRed);
-    console.log(`${error}`.red);
-    console.log('---------------------------!!!!---------------------------'.bgRed);
+  if (!isInternal) {
+  /* eslint no-console: 0 */
+    console.error(`${'!!!!'.bgRed}${`${error}`.red}${'!!!!'.bgRed}`);
+    console.error(`${error.stack}`.red);
+
+    return res.send({ error: 'Internal error has occured' });
   }
 
-  return res.send({ error });
+  return res.send({
+    error: error.message,
+    type: error.type,
+  });
 });
 
 

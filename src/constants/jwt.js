@@ -1,6 +1,6 @@
 const jwtConfig = {
   tokenLife: '10s',
-  refreshTokenLife: '7d',
+  refreshTokenLife: '30s',
 };
 
 const authCookeisConfig = {

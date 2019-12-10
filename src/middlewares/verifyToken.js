@@ -1,11 +1,18 @@
 const jwt = require('jsonwebtoken');
 
 // Constants
-const { INVALID_TOKEN } = require('@/constants/errors');
+const {
+  messages: {
+    INVALID_TOKEN,
+    JWT_EXPIRED_ERROR,
+  },
+} = require('@/constants/errors');
+
+// Error handling
+const generateError = require('@/utils/generateError');
 
 
 const { TOKEN_SECRET } = process.env;
-const JWT_EXPIRED_ERROR = 'jwt expired';
 
 const verifyToken = (req, res, next) => {
   const {
@@ -14,29 +21,28 @@ const verifyToken = (req, res, next) => {
 
   try {
     if (!token) {
-      res.status(401);
-      throw new Error(INVALID_TOKEN);
+      const error = generateError(INVALID_TOKEN);
+      throw error;
     }
 
     const tokenVerified = jwt.verify(token, TOKEN_SECRET, (err) => {
       if (err) {
-        res.status(403);
-        throw new Error(err.message);
+        const error = generateError(err.message);
+        throw error;
       }
+
       return true;
     });
 
-    req.body.isVerified = tokenVerified;
+    req.locals.isVerified = tokenVerified;
 
     return next();
-  } catch ({ message }) {
-    if (message === JWT_EXPIRED_ERROR) {
+  } catch (error) {
+    if (error.message.includes(JWT_EXPIRED_ERROR)) {
       return res.redirect('/token');
     }
 
-    return res
-      .status(403)
-      .send({ message });
+    return next(error);
   }
 };
 
