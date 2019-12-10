@@ -34,7 +34,9 @@ const verifyToken = (req, res, next) => {
       return true;
     });
 
-    req.locals.isVerified = tokenVerified;
+    req.locals = {
+      isVerified: tokenVerified,
+    };
 
     return next();
   } catch (error) {

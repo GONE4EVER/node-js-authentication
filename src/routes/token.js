@@ -3,9 +3,11 @@ const jwt = require('jsonwebtoken');
 
 // Models
 const User = require('@/models/user');
+const Token = require('@/models/token');
 
-// TOKENS
+// Auth helpers
 const generateTokens = require('@/utils/generateTokens');
+const getResponseWithAuth = require('@/utils/getResponseWithAuth');
 
 // Error handling
 const generateError = require('@/utils/generateError');
@@ -28,13 +30,13 @@ router.get('/', async (req, res, next) => {
     } = req.cookies;
 
     const refreshTokenVerified = jwt.verify(tokenFromCookies, REFRESH_TOKEN_SECRET,
-      (err) => {
+      (err, decodedData) => {
         if (err) {
           const error = generateError(err.message);
           throw error;
         }
 
-        return true;
+        return decodedData;
       });
 
     if (!refreshTokenVerified) {
@@ -43,27 +45,39 @@ router.get('/', async (req, res, next) => {
     }
 
     const {
+      _id,
+    } = refreshTokenVerified;
+
+    console.log(refreshTokenVerified);
+
+    const {
       _id: userID,
       name,
-    } = refreshTokenVerified;
-    const { token } = await User
-      .findOne({ _id: userID })
+      token: {
+        _id: tokenID,
+        refresh,
+      },
+    } = await User
+      .findOne({ _id })
       .select('_id name token')
-      .populate('token', '-_id -__v');
+      .populate('token', '-__v');
 
-    if (tokenFromCookies !== token.refresh) {
+    if (tokenFromCookies !== refresh) {
       const error = generateError(INVALID_TOKEN);
       throw error;
     }
 
-    const [
-      accessToken,
-      refreshToken,
-    ] = generateTokens({ _id: userID, name });
+    const [ accessToken, refreshToken ] = generateTokens({ _id: userID, name });
 
-    return res.send({
-      accessToken,
-      refreshToken,
+    await Token.findByIdAndUpdate(
+      tokenID,
+      { access: accessToken, refresh: refreshToken }
+    );
+
+    const response = getResponseWithAuth(res, [ accessToken, refreshToken ]);
+
+    return response.send({
+      accessToken, refreshToken,
     });
   } catch (error) {
     res.status(401);

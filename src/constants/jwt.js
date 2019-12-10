@@ -1,9 +1,9 @@
 const jwtConfig = {
-  tokenLife: '10s',
-  refreshTokenLife: '30s',
+  tokenLife: '5s',
+  refreshTokenLife: '1d',
 };
 
-const authCookeisConfig = {
+const authCookiesConfig = {
   maxAge: 1000 * 60 * 60,
   httpOnly: true,
   // signed: true,
@@ -11,5 +11,5 @@ const authCookeisConfig = {
 
 module.exports = {
   jwtConfig,
-  authCookeisConfig,
+  authCookiesConfig,
 };

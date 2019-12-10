@@ -3,17 +3,17 @@ const {
   REFRESH_TOKEN_COOKIE,
 } = require('@/constants/request');
 
-const { authCookeisConfig } = require('@/constants/jwt');
+const { authCookiesConfig } = require('@/constants/jwt');
 
 
-const getRequestWithAuth = (
+const getResponseWithAuth = (
   response,
   [ accessToken, refreshToken ],
   status
 ) => response.status(status || 200)
-  .cookie(ACCESS_TOKEN_COOKIE, accessToken, authCookeisConfig)
-  .cookie(REFRESH_TOKEN_COOKIE, refreshToken, authCookeisConfig);
+  .cookie(ACCESS_TOKEN_COOKIE, accessToken, authCookiesConfig)
+  .cookie(REFRESH_TOKEN_COOKIE, refreshToken, authCookiesConfig);
 
 
-module.exports = getRequestWithAuth;
+module.exports = getResponseWithAuth;
 
